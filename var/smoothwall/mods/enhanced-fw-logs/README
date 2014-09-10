@@ -1,0 +1,85 @@
+[3.0] Enhanced Firewall Logs MOD V1.4.4
+Author: KrisTof on smoothwall.org forums
+
+Documentation version 1.4.2
+
+Works on Smoothwall 3.0 ONLY !!
+
+
+First Release: May 13th, 2010
+V1.1 Release: May 14th, 2010
+  I had forgot to include a directory in 1.1 (even if not used, yet...)
+V1.2 Release: May 17th, 2010
+  fixed to work for ppp0
+  fixed tmp wrong permissions in package
+V1.3 Release: May 18th, 2010
+  fixed color issues for ranges of IP on green, orange or purple networks
+  put the in >> out functionality
+  added padlock icons to indicate IPs that are already blocked
+V1.4 Release: January 27th, 2011
+  -listing now works in reverse order
+  -added option to Hide/Show Blocked IPs
+  -pagination fixed and can be set in preferences file
+  -various cosmetic changes
+  -colors can be sets to anyone's taste in preferences file
+  -help available through the interface
+V1.4.1 Release: January 28th, 2011
+  -added an option to turn off CIDR range checking for those who block 
+   millions of IPs through CIDR notation.
+V1.4.2 Release: January 29th, 2011
+  -fixed filtering by incoming interface
+  -added filtering by protocol and dst port (including count)
+  -pagination viewport is not from a menu.
+V1.4.2 Release: January 31th, 2011
+  -fixed /tmp permissions on install
+
+Known issues:
+No more as far as I can tell...
+
+Compatibility with other Mods:
+This mod is now compatible with Active IP Block MOD but should be installed
+AFTER it.. If you install Active IP Block after this MOD, then you will not 
+have Enhanced Logs.
+
+1 - What does this mod do?
+
+This mod replaces /httpd/cgi-bin/logs.cgi/firewalllogs.dat and
+provides more advanced filtering.
+
+2 - What is this good for?
+
+In addition with the basic filtering by date, it allows for the
+filtering of logs based on the Incoming Interface (eth?) as well
+as by Source IP ("the offenders"). Blocked IPs can be shown or hidden.
+
+The Source IPs are colored red if they come from outside (not
+from either your local green, orange or purple networks). This
+includes your red interface IP (which is local). In other
+words, any OUTSIDE IP (the one you care about) will be red. Next
+to these "offending" IPs, a number between brackets indicate how
+many packets have been dropped. 
+
+Finally, it adds padlock icons next to IPs that are already blocked. 
+If the IP was blocked manually or through Active Guardian, the padlock
+is red. If an IP was blocked automatically by the Active IP Block MOD, 
+the padlock will be orange.
+
+3 - How to install ?
+
+Transfer SW30_Enhanced_FW_Logs-V1.4.1.tgz to /tmp on your smoothwall
+and run the commands:
+
+$ cd /tmp
+$ tar zxvf SW3_Enhanced_FW_Logs-V1.4.1tgz -C /
+$ ./install.sh
+
+4 - How to uninstall ?
+
+Simply run the command:
+
+$ /var/smoothwall/mods/enhanced-fw-logs/uninstall-enhanced-fw-logs-1.4.1.pl
+
+Go to the your Smoothwall Firewall Logs page and enjoy!
+
+KrisTof
+

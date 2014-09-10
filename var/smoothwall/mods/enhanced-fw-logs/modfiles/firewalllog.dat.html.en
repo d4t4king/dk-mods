@@ -1,0 +1,29 @@
+<P><FONT SIZE='3'><B><U>Enhanced Firewall Logs V1.4.4</U></B></FONT></P>
+
+<P><I>If you have questions, comments or suggestions, please join the <A HREF=http://community.smoothwall.org/forum/viewtopic.php?f=26&t=34526 target=_new> Enhanced Firewall Logs discussion forum</A> on the Smoothwall website.</I></P>
+
+<P>Like the normal log viewer, this MOD lets you select the date you are
+interested in viewing using the drop-down boxes at the top of the page. You
+can also filter the logs by specifying your smoothwall INCOMING interface,
+Protocol, or the port that was used to reject connection attempts.
+You can also restrict the listing to a single source IP address.</P>
+
+<P>This new version now includes an option to Hide or Show Blocked IPs. This way you can quickly hide IPs that are repeat offenders or whose high violation counts take most of the space or multiple pages. By default, the blocked IPs will NOT be shown. You can use the specific menu to change this settings.</P>
+
+<P>Also, this new version now detects which IPs addresses are blocked when you used a CIDR notation (such as xxx.xxx.xxx.0/8) on the IP Block page. CIDR range allows you to block a whole range of IPs in one line. You can turn off this feature by setting USE_CIDR=0 in the "/var/smoothwall/mods/enhanced-fw-logs/etc/preferences" file.</P>
+
+<P>Remember that the body of this page is made up of a table of packets that were DROPPED by the firewall.</P>
+
+<P>The log entries listed in GREEN, ORANGE, BLUE or PURPLE indicate these IP addresses come from YOUR NETWORK(s) (i.e. you have controlled over these machines). For this reason, your red interface IP will be shown in GREEN (because it is generally your own public IP).</P>
+
+<P>The log entries listed in RED point to machines OUTSIDE YOUR NETWORKS and are the ones worth investigating, even blocking if needed.</P>
+
+<P> Each <b>Source</b> IP address (originating connections) is listed along with a number between brackets that indicates how many times this machine has had its packets dropped on that day.</P>
+
+<P>Every UNBLOCKED IP address will have a small arrow and a checkbox. Clicking on the IP (or on this arrow) will open a popup that can be used to perform whois lookups or add this IP immediately to the IP block list. With the checkbox you can perform these actions on a bulk selection of IPs.  The whois function is useful for determining who is sending connection requests to your SmoothWall.</P>
+
+<P>Every already BLOCKED IPs will have a padlock icon next to it instead of the small arrow. The padlock will be red if this IP was blocked manually, or if the Active Guardian MOD did it for you. If you have installed <A HREF=http://community.smoothwall.org/forum/viewtopic.php?f=26&t=24907 TARGET=_new>Active IP Block MOD</A> and this MOD blocked the IP for you, the padlock will be orange. In these cases, no popup window will open if you click on the IP.</P>
+
+<P>You need to use the "Smooth" links at the top of the page to navigate if there is more than one page meeting the current criteria. You may press the <B>Export</B> button to view the original firewall logs for that day in text format (no filtering).</P>
+
+<P>The "preferences" file in /var/smoothwall/mods/enhanced-fw-logs/etc can be modified to change the look and feel of the page. The VIEWSIZE parameter in this file is used to paginate the logs by a fixed number of rows. You can then use the menu to indicate the max number of lines to display per page. The colors can also be changed to accommodate everyone's taste.</P>
