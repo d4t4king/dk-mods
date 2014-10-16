@@ -1,0 +1,1268 @@
+#!/usr/bin/perl
+#
+# SmoothWall CGIs
+#
+# This code is distributed under the terms of the GPL
+#
+# (c) The SmoothWall Team
+
+# Aug 28 14:54:30 random kernel: IN=ppp0 OUT= MAC= SRC=213.48.150.1
+# DST=213.208.115.234 LEN=110 TOS=0x00 PREC=0x00 TTL=60 ID=30699 DF PROTO=TCP
+# SPT=6667 DPT=62593 WINDOW=2505 RES=0x00 ACK PSH URGP=0  
+
+# Parse the query string and determine how we are planning on operating (for GET requests)
+
+# This version of firewalllog.dat come from the
+# Enhanced Firewall Logs MOD V1.4.4
+
+if ($ENV{'QUERY_STRING'})
+{
+	$_ = $ENV{'QUERY_STRING'};
+	my $action;
+	$_ =~ s/\+/ /g;
+	my @temp = split(/\&/);
+	foreach $_ (@temp)
+	{
+		($var, $val) = split(/\=/);
+		if ($var eq 'ACTION') {
+			$action = $val; }
+	}
+
+	if ($action eq $tr{'add to ip block'})
+	{
+		print "Status: 302 Moved\n";
+		print "Location: /cgi-bin/ipblock.cgi?$ENV{'QUERY_STRING'}\n\n";
+		exit 0;
+	}
+	if ($action eq $tr{'lookup'})
+	{
+		print "Status: 302 Moved\n";
+		print "Location: /cgi-bin/ipinfo.cgi?$ENV{'QUERY_STRING'}\n\n";
+		exit 0;
+	}
+}
+
+# open and parse the log file.
+
+# Some usefull variables ...
+my @shortmonths = ( 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' );
+my @longmonths = ( $tr{'january'}, $tr{'february'}, $tr{'march'}, $tr{'april'}, $tr{'may'}, $tr{'june'}, $tr{'july'}, $tr{'august'}, $tr{'september'}, $tr{'october'}, $tr{'november'},	$tr{'december'} );
+my @now = localtime(time);
+
+# get some configuration options from the page request, alternatively, use defaults
+
+use lib "/usr/lib/smoothwall";
+use header qw( :standard );
+
+# Added by fwlogmod
+use Socket;
+use Net::CIDR;
+# END added by fwlogmod
+
+my $viewsize=0;	# Paginate number of lines
+my $viewsize2=40;	# Paginate number of lines
+
+my %cgiparams;
+my $errormessage;
+my %hithash;
+
+# Added by fwlogmod
+my $printedout=0;
+my $Red_Color= '#CC0000';
+my $Green_Color= '#00AA00';
+my $Orange_Color= '#F87217';
+my $Purple_Color= '#800080';
+my $Use_CIDR=1;
+
+my @inaddrs, @addrs;
+my $addr;
+my $address;
+my $errormessage = '';
+my $preferences;
+my $netsettings;
+my $hostname;
+my $defaultsettings;
+my $green_device;
+my $red_device;
+my $orange_device;
+my $purple_device;
+my $red_ip;
+my $orange_ip;
+my $red_network;
+my $green_network;
+my $orange_network;
+my $purple_network;
+my $green_ip;
+my $strdev='All';
+my $filterip='All';
+my $filterproto='All';
+my $filterport='All';
+my $showblocked=0;
+my $GREEN_MASK;
+my $PURPLE_MASK;
+my $ORANGE_MASK;
+my $current_page=0;
+
+$netsettings{'GREEN_NETADDRESS'} = '';
+$netsettings{'GREEN_DEV'} = '';
+$netsettings{'GREEN_ADDRESS'} = '';
+$netsettings{'ORANGE_NETADDRESS'} = '';
+$netsettings{'ORANGE_DEV'} = '';
+$netsettings{'ORANGE_ADDRESS'} = '';
+$netsettings{'PURPLE_NETADDRESS'} = '';
+$netsettings{'PURPLE_DEV'} = '';
+$netsettings{'PURPLE_ADDRESS'} = '';
+$netsettings{'RED_NETADDRESS'} = '';
+$netsettings{'RED_DEV'} = '';
+$netsettings{'RED_ADDRESS'} = '';
+
+$orange_exists=1;
+$purple_exists=1;
+$SWRoot='/var/smoothwall/mods';
+
+&readhash("/var/smoothwall/ethernet/settings", \%netsettings);
+
+$green_ip=$netsettings{'GREEN_ADDRESS'};
+$green_network=$netsettings{'GREEN_NETADDRESS'};
+@ipnumbers = split(/\./, $green_network);
+$GREEN_MASK= $ipnumbers[0] . "." . $ipnumbers[1] . "." . $ipnumbers[2];
+
+if ($netsettings{'ORANGE_NETADDRESS'} eq '') {
+	$orange_exists=0;
+} else {
+	$orange_device = $netsettings{'ORANGE_DEV'};
+	$orange_ip=$netsettings{'ORANGE_ADDRESS'};
+	$orange_network=$netsettings{'ORANGE_NETADDRESS'};
+	@ipnumbers = split(/\./, $orange_network);
+	$ORANGE_MASK= $ipnumbers[0] . "." . $ipnumbers[1] . "." . $ipnumbers[2];
+}
+if ($netsettings{'PURPLE_NETADDRESS'} eq '') {
+	$purple_exists=0;
+} else {
+	$purple_device = $netsettings{'PURPLE_DEV'};
+	$purple_network=$netsettings{'PURPLE_NETADDRESS'};
+	$purple_ip=$netsettings{'PURPLE_ADDRESS'};
+	@ipnumbers = split(/\./, $purple_network);
+	$PURPLE_MASK= $ipnumbers[0] . "." . $ipnumbers[1] . "." . $ipnumbers[2];
+}
+
+my $preferences_file = "${SWRoot}/enhanced-fw-logs/etc/preferences";
+
+$preferences{'VIEWSIZE'} = '';
+$preferences{'RED_COLOR'} = '';
+$preferences{'GREEN_COLOR'} = '';
+$preferences{'ORANGE_COLOR'} = '';
+$preferences{'PURPLE_COLOR'} = '';
+$preferences{'USE_CIDR'} = '';
+
+&readhash("$preferences_file", \%preferences);
+
+if ($preferences{'VIEWSIZE'} ne '') { $viewsize2=$preferences{'VIEWSIZE'};
+} else
+{ $viewsize2=40;
+}
+if ($preferences{'RED_COLOR'} ne '') {$Red_Color=$preferences{'RED_COLOR'};}
+if ($preferences{'GREEN_COLOR'} ne '') {$Green_Color=$preferences{'GREEN_COLOR'};}
+if ($preferences{'ORANGE_COLOR'} ne '') {$Orange_Color=$preferences{'ORANGE_COLOR'};}
+if ($preferences{'USE_CIDR'} ne '') {$Use_CIDR=$preferences{'USE_CIDR'};}
+else
+{ $Use_CIDR=1;
+}
+
+ 
+
+
+$green_device = $netsettings{'GREEN_DEV'};
+
+#if ($netsettings{'RED_ADDRESS'} ne '') {
+#	$red_ip=$netsettings{'RED_ADDRESS'};
+#} else
+#{	# Probably using ppp
+   open (IPFILE, '/var/smoothwall/red/local-ipaddress');
+   while (<IPFILE>) {
+   	$red_ip=$_;
+	chomp($red_ip);
+   }
+   close(IPFILE);
+#}
+#if ($netsettings{'RED_DEV'} ne '') {
+#	$red_device = $netsettings{'RED_DEV'};
+#} else
+#{	# Probably using ppp
+   open (DEVFILE, '/var/smoothwall/red/iface');
+   while (<DEVFILE>) {
+   	$red_device=$_;
+   }
+   close(DEVFILE);
+#}
+
+my $ipblockimg='/ui/img/activeipblocklock3.png';
+my $activeipblockimg='/ui/img/activeipblocklock4.png';
+
+# READING OUT IPBLOCK AND ACTIVEIPBLOCK FILE
+my @ll;
+my %ipblocked;
+my $udpprotofound=0;
+my $tcpprotofound=0;
+my $iscidrblocked=0;
+my @cidrblocked;
+my @cidr_list;
+my $cidrstr;
+my $maxcidrblocked=0;
+open (ACTIVEBLOCKFILE, "/var/smoothwall/ipblock/config");
+@ll=<ACTIVEBLOCKFILE>;
+close(ACTIVEBLOCKFILE);
+foreach $lll (@ll) {
+	chomp($lll);
+	@ittt=split(/,/,$lll);
+	$cidrstr= $ittt[0];
+	if (($Use_CIDR) && ( $cidrstr =~ /\// )) {
+		if ($maxcidrblocked==0) {
+			@cidr_list=Net::CIDR::range2cidr($ittt[0]);
+		}
+		else {
+			@cidr_list=Net::CIDR::cidradd($ittt[0], @cidr_list);
+		}
+		$maxcidrblocked++;
+	}
+	else
+	{
+		$ipblocked{$ittt[0]}=1;
+	}
+}
+# Here we read the list of IPs from Active IP Block MOD
+open (ACTIVEBLOCKFILE, "/var/smoothwall/mods/activeblock/etc/blocked");
+@ll=<ACTIVEBLOCKFILE>;
+close(ACTIVEBLOCKFILE);
+
+
+foreach $lll (@ll) {
+	chomp($lll);
+	@ittt=split(/,/,$lll);
+	$ipblocked{$ittt[0]}=2;
+}
+
+
+# END READING OUT IPBLOCK FILE
+
+# END added by fwlogmod
+
+my %services;
+
+my $name, $protoport;
+open (FILE, '/etc/services');
+while (<FILE>)
+{
+	s/#.*$//;
+	($name, $protoport) = /^([\w-]+)\W+(\d+\/\w+)/;
+	if (defined $protoport) {
+		$services{$protoport} = uc($name); }
+}
+close (FILE);
+
+$cgiparams{'DAY'} = $now[3];
+$cgiparams{'MONTH'} = $now[4];
+&getcgihash(\%cgiparams);
+
+my $start = -1;
+
+if ($ENV{'QUERY_STRING'} && $cgiparams{'ACTION'} ne $tr{'update'})
+{
+	my @temp = split(',',$ENV{'QUERY_STRING'});
+	$start = $temp[0];
+	$cgiparams{'MONTH'} = $temp[1];
+	$cgiparams{'DAY'} = $temp[2];
+	$cgiparams{'SHOW_BLOCKED'} = $temp[3];
+	$cgiparams{'INTERFACE'} = $temp[4];
+	$cgiparams{'SOURCEIP'} = $temp[5];
+	$cgiparams{'PROTOCOL'} = $temp[6];
+	$cgiparams{'DSTPORT'} = $temp[7];
+	$cgiparams{'PAGINATE'} = $temp[8];
+}
+
+if (!($cgiparams{'MONTH'} =~ /^(0|1|2|3|4|5|6|7|8|9|10|11)$/) || !($cgiparams{'DAY'} =~ /^(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31)$/))
+{
+	$cgiparams{'DAY'} = $now[3];
+	$cgiparams{'MONTH'} = $now[4];
+}
+
+my $monthstr = $shortmonths[$cgiparams{'MONTH'}];
+my $day = $cgiparams{'DAY'};
+my $daystr;
+
+if (($cgiparams{'SHOW_BLOCKED'} eq '') || ($cgiparams{'SHOW_BLOCKED'} == 0))
+{
+	$showblocked=0;
+}
+else
+{
+	$showblocked=1;
+}
+
+if ($cgiparams{'INTERFACE'} eq '') {
+	$strdev = 'All';
+}
+else
+{
+	$strdev = $cgiparams{'INTERFACE'};
+}
+
+if (($cgiparams{'SOURCEIP'} eq '') || ($cgiparams{'SOURCEIP'} eq 'All')) {
+	$filterip = 'All';
+}
+else
+{	$filterip = $cgiparams{'SOURCEIP'};
+	$showblocked = 1; # if a specific ip is shown, we show blocked
+}
+if (($cgiparams{'PROTOCOL'} eq '') || ($cgiparams{'PROTOCOL'} eq 'All')) {
+	$filterproto = 'All';
+}
+else
+{	$filterproto = $cgiparams{'PROTOCOL'};
+}
+if (($cgiparams{'DSTPORT'} eq '') || ($cgiparams{'DSTPORT'} eq 'All')) {
+	$filterport = 'All';
+}
+else
+{	$filterport = $cgiparams{'DSTPORT'};
+}
+
+if ($cgiparams{'PAGINATE'} eq '')
+{
+	$viewsize=$viewsize2;
+}
+else
+{
+	$viewsize=$cgiparams{'PAGINATE'};
+}
+
+if ($strdev eq '110') { $strdev='All'; }
+
+if ($day <= 9) {
+	$daystr = " $day"; 
+} else {
+	$daystr = $day; 
+}
+
+open (FILE, '/var/log/messages');
+my $lines = 0;
+my @log;
+my @log_timestamp;
+my @log_day;
+my @log_time;
+my @log_packet;
+my @log_in;
+my @log_out;
+my @log_protostr;
+my @log_src;
+my @log_srcport;
+my @log_srcportstr;
+my @log_dst;
+my @log_dstport;
+my @log_dstportstr;
+my $srcport;
+my $srcportstr;
+my $dstport;
+my $dstportstr;
+my %ip_counts;
+my %port_counts;
+my @ip_list;
+my @port_list;
+my @ip_list_sorted;
+my @port_list_sorted;
+my $nbips = 0;
+my $nbports = 0;
+my @clear_sections;
+my $srcaddr;
+my $dstaddr;
+
+
+@ipcounts = (0) x @ipcounts;
+@portcounts = (0) x @portcounts;
+
+while (<FILE>)
+{
+ 	if (/(^${monthstr} ${daystr} ..:..:..) [\w\-]+ kernel: (.*)$/)
+	{
+		$log_timestamp[$lines] = $1;
+		$log_packet[$lines] = $2;
+		my $timestamp = $log_timestamp[$lines];
+		$timestamp =~ /... (..) (..:..:..)/;
+		$log_day[$lines]=$1;
+		$log_time[$lines]=$2;
+		my $packet = $log_packet[$lines];
+		if ($packet =~ /IN\=(\w+)/) { $log_in[$lines] = $1; }
+		if ($packet =~ /OUT\=(\w+)/) { $log_out[$lines] = $1; }
+		if ($packet =~ /SRC\=([\d\.]+)/) { $log_src[$lines] = $1; }
+
+		#if ($log_src[$lines] ne '0.0.0.0') {
+		# Add the IP to the menu
+		if ($ip_counts{"$log_src[$lines]"} == 0) {
+		  	  $ip_list[$nbips]=$log_src[$lines];
+		  	  $nbips = $nbips + 1;
+		}
+		# increase the counts of infractions for this IP
+		$ip_counts{"$log_src[$lines]"} = $ip_counts{"$log_src[$lines]"} + 1;
+		# Test CIDR Block
+		if ($Use_CIDR == 1) {
+		     if ($ipblocked{$log_src[$lines]} eq '') {
+		  	$iscidrblocked=Net::CIDR::cidrlookup($log_src[$lines], @cidr_list);;
+		  	if ($iscidrblocked) {
+				$ipblocked{$log_src[$lines]}=1;
+			}
+		     }
+		}
+
+		if ($packet =~ /DST\=([\d\.]+)/) { $log_dst[$lines] = $1; }
+		if ($packet =~ /PROTO\=(\w+)/) { $log_protostr[$lines] = $1; }
+		if ($log_protostr[$lines] eq 'TCP') { $tcpprotofound=1;}
+		if ($log_protostr[$lines] eq 'UDP') { $udpprotofound=1;}
+		my $protostrlc = lc($log_protostr[$lines]);
+		if ($packet =~ /SPT\=(\d+)/) { $log_srcport[$lines] = $1; }
+		if ($packet =~ /DPT\=(\d+)/) { $log_dstport[$lines] = $1; }
+
+		$srcport = $log_srcport[$lines];
+		$dstport = $log_dstport[$lines];
+		$dstportstr = '';
+		$srcportstr = '';
+		my $servi = $services{"$srcport/$protostrlc"};
+		if ($servi ne '' && $srcport < 1024) {
+			$srcportstr = "$srcport($servi)";
+		} else {
+			$srcportstr = $srcport;
+		}
+
+		$servi = $services{"$dstport/$protostrlc"};
+		if ($servi ne '' && $dstport < 1024) {
+			$dstportstr = "$dstport($servi)";
+		} else {
+			$dstportstr = $dstport;
+		}
+
+		$log_srcportstr[$lines]=$srcportstr;
+		$log_dstportstr[$lines]=$dstportstr;
+
+		#Deal with the dstport count
+		if ($port_counts{"$log_dstportstr[$lines]"} == 0) {
+		  	  $port_list[$nbports]=$log_dstportstr[$lines];
+		  	  $nbports = $nbports + 1;
+		}
+		# increase the counts of infractions for this dst port
+		$port_counts{"$log_dstportstr[$lines]"} = $port_counts{"$log_dstportstr[$lines]"} + 1;
+
+		# Test what conditions are set to display a log line
+		# ALL CONDITIONS MUST BE MET !!!
+		if (($strdev eq '') || ($strdev eq 'All') || ($log_in[$lines] =~ /$strdev/)) 
+		{
+		  if ( 
+		       ($filterip eq '')
+		       ||
+		       ($filterip eq 'All')		# SHOW ALL IPS
+		       ||
+		       ( ($filterip ne 'All') &&	# OR THE SAME ONE
+		         ($log_src[$lines] eq $filterip)
+		       )
+		     )
+		  {
+		     if (
+			  ($filterport eq 'All')	# SHOW ALL PORTS
+			  ||
+		  	  ( (filterport ne 'All') &&	# OR THE SAME ONE
+			    ($log_dstportstr[$lines] eq $filterport)
+			  )
+			)
+			{
+			   if ( ($filterproto eq 'All')
+				||
+				( ($filterproto ne 'All') &&
+				  ($log_protostr[$lines] eq $filterproto)
+				)
+			      )
+			   {
+			     if ( ($showblocked == 1) ||	# SHOW ALL
+				  ( ($showblocked == 0) &&   # OR JUST THE ONE
+			 	    ($ipblocked{$log_src[$lines]} eq '')
+			          )
+			        )
+			     {
+			        $log[$lines] = $_;
+			        $lines++;
+			     }
+			   } # loop filterproto
+			} #loop filterport
+		  } #loop filterip
+	   	} # loop strdev
+	}
+}
+close (FILE);	
+my $total_lines = $lines;
+if ($nbips > 0)
+{
+	@ip_list_sorted = sort {$a <=> $b} @ip_list;
+}
+
+if ($nbports > 0)
+{
+	@port_list_sorted = sort {$a <=> $b} @port_list;
+}
+
+
+
+# now display the page, having worked out *how* we're supposed to do so.
+
+my $iii=0;
+
+if ($cgiparams{'ACTION'} eq $tr{'export'})
+{
+	print "Content-type: text/plain\n\n";
+	print "SmoothWall firewall log\r\n";
+	print "Date: $cgiparams{'DAY'} $longmonths[$cgiparams{'MONTH'}]\r\n\r\n";
+
+	foreach $_ (@log)
+	{
+		/(^${monthstr} ${daystr} ..:..:..) [\w\-]+ kernel: (.*)/;
+		my $timestamp = $1; my $packet = $2;
+		$timestamp =~ /... (..) (..:..:..)/;
+		my $day = $1; my $time = $2;
+		print "$time $packet\r\n";
+	}
+	exit 0;
+} else {
+	&displaypage();
+}
+
+
+sub displaypage
+{
+	my $head = qq{
+<script type='text/javascript'>
+//<!--
+var addresses = new Array();
+var count = 0;
+var final_count = 0;
+
+function xmlhttpPost( type, query, element )
+{
+        var xmlHttpReq = false;
+        var self = this;
+
+	var url = "";
+	var reqquery = "";
+
+	if ( type == "lookup" ){
+		url = '/cgi-bin/ipinfo.cgi';
+		reqquery = 'IP=' + query + '&MODE=quick';
+		document.getElementById( element + 'lookup' ).innerHTML =  "looking";
+	} else if ( type == "block" ){
+		url = '/cgi-bin/ipblock.cgi';
+		reqquery = "SRC_IP=" + query + "&ACTION=$tr{'add'}&TARGET=DROP&ENABLED=on";
+		document.getElementById( element + 'block' ).innerHTML =  "blocking";
+	}
+
+
+        if (window.XMLHttpRequest) {
+                // Mozilla/Safari
+                self.xmlHttpReq = new XMLHttpRequest();
+        } else if (window.ActiveXObject) {
+                // IE
+                self.xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        self.xmlHttpReq.open('POST', url, true);
+        self.xmlHttpReq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        self.xmlHttpReq.onreadystatechange = function() {
+                if ( self.xmlHttpReq && self.xmlHttpReq.readyState == 4) {
+                        updatepage(type, query, element, self.xmlHttpReq.responseText);
+                }
+        }
+
+        self.xmlHttpReq.send( reqquery );
+}
+
+function updatepage( type, query, id, response ){
+	if ( type == "lookup" ){
+		addresses[ query ] = response;
+		document.getElementById(  id ).innerHTML += addresses[ query ];
+		document.getElementById(  id + 'lookup' ).innerHTML =  "lookup" ;
+		document.getElementById(  id + 'lookup' ).style.color = '#a0a0a0';
+		document.getElementById(  id ).style.height = '200px';
+		document.getElementById(  id ).style.width  = '420px';
+	} else if ( type == "block" ){
+		document.getElementById(  id + 'block' ).innerHTML =  "block" ;
+		document.getElementById(  id + 'block' ).style.color = '#a0a0a0';
+	}
+
+}
+
+function update( address, id )
+{
+	var finalt = "<strong>" + address + "</strong><br/><div style='float: right;'>";
+
+	if ( addresses[address] ){
+		document.getElementById( 'a' + id ).style.height = '200px';
+		document.getElementById( 'a' + id ).style.width  = '420px';
+		var lookup = "<span id='a" + id + "lookup'><span style='color: #a0a0a0;'>lookup</span></span>";
+		finalt += lookup;
+	} else {
+		var lookup = "<span id='a" + id + "lookup'><span style='color: blue; cursor: pointer;' onMouseOver=sub_menu_show('" + id + "'); onClick=lookup('" + address + "','a" + id + "')>lookup</span></span>&nbsp;";
+		finalt += lookup;
+	}
+
+	finalt += "<span id='a" + id + "block'><span style='color: red; cursor: pointer;' onMouseOver=sub_menu_show('" + id + "'); onClick=block('" + address + "','a" + id + "');>block</span></span></div>";
+
+	if ( addresses[address] ){
+		finalt += addresses[ address ];
+	}	
+
+	document.getElementById( 'a' + id ).innerHTML = finalt; 
+}
+
+function lookup( address, id ){
+	xmlhttpPost( "lookup", address, id );
+}
+
+function block( address, id ){
+	xmlhttpPost( "block", address, id );
+}
+
+//-->
+</script>
+<style type='text/css'>
+div.toolbox { 
+	width: 220px;
+	height: 40px;
+	display: none;
+	margin-top: 3px;
+	float: left;
+	position: absolute;
+	background-color: #f0f0f0;
+        color : black;
+	border: 1px #505050 solid;
+	text-align: left;
+	padding: 5px;
+	filter:alpha(opacity=96);
+        -moz-opacity: 0.96;
+        opacity: 0.96;
+	z-index: 3;
+	}
+</style>
+};
+	&showhttpheaders();
+	&openpage($tr{'firewall log'}, 1, $head, 'logs');
+	&openbigbox('100%', 'LEFT');
+
+	&alertbox($errormessage);
+
+	&openbox($tr{'settingsc'});
+
+	#print "QUERY_STRING=[$ENV{'QUERY_STRING'}]<BR>\n";
+	#print "SHOW_BLOCKED=[$showblocked] ($cgiparams{'SHOW_BLOCKED'})<BR>\n";
+	print <<END
+
+<FORM METHOD='POST'>
+<TABLE WIDTH='100%'>
+<TR>
+	<TD WIDTH='15%' CLASS='base'>$tr{'month'}</TD>
+	<TD WIDTH='25%'>
+	<SELECT NAME='MONTH'>
+END
+;
+	my $month;
+	for ($month = 0; $month < 12; $month++)
+	{
+		print "\t<OPTION ";
+		if ($month == $cgiparams{'MONTH'}) {
+			print 'SELECTED '; 
+		}
+		print "VALUE='$month'>$longmonths[$month]</OPTION>\n";
+	}
+	print <<END
+	</SELECT>
+	</TD>
+	<TD WIDTH='15%' CLASS='base'>$tr{'day'}</TD>
+	<TD WIDTH='25%'>
+	<SELECT NAME='DAY'>
+END
+;
+
+	for ($day = 1; $day <= 31; $day++) 
+	{
+		print "\t<OPTION ";
+		if ($day == $cgiparams{'DAY'}) {
+			print 'SELECTED '; 
+		}
+		print "VALUE='$day'>$day</OPTION>\n";
+	}
+
+	print <<END
+</SELECT>
+</TD>
+	<TD WIDTH='20%' COLSPAN=2 ALIGN='CENTER'>
+END
+;
+	print "<SELECT NAME='SHOW_BLOCKED'>\n";
+	print "<OPTION VALUE='1' ";
+	if ($showblocked == 1 ) {
+		print "SELECTED";
+	}
+	print ">Show Blocked IPs</OPTION/>\n";
+	print "<OPTION VALUE='0' ";
+	if ($showblocked == 0 ) {
+		print "SELECTED";
+	}
+	print ">Hide Blocked IPs</OPTION/>\n";
+
+	print <<END
+	</SELECT></TD>
+</TR>
+<TR>
+ <TD WIDTH='15%' CLASS='base'>$tr{'incoming interface'}: </TD>
+         <TD WIDTH='25%'>
+	 <SELECT NAME='INTERFACE'>
+END
+;
+	print "\t<OPTION ";
+	if ( $strdev eq 'All') {
+			print 'SELECTED ';
+	}
+	print "VALUE='All'>All</OPTION>\n";
+	print "\t<OPTION ";
+	if ( $strdev eq $red_device) {
+		print 'SELECTED ';
+	}
+	print "VALUE='$red_device'>$red_device (RED)</OPTION>\n";
+	print "\t<OPTION ";
+	if ( $strdev eq $green_device) {
+			print 'SELECTED ';
+	}
+	print "VALUE='$green_device'>$green_device (GREEN)</OPTION>\n";
+	if ($orange_device ne '') {
+		print "\t<OPTION ";
+		if ( $strdev eq $orange_device) {
+			print 'SELECTED ';
+		}
+		print "VALUE='$orange_device'>$orange_device (ORANGE)</OPTION>\n";
+	}
+	if ($purple_device ne '') {
+		print "\t<OPTION ";
+		if ( $strdev eq $purple_device) {
+			print 'SELECTED ';
+		}
+		print "VALUE='$purple_device'>$purple_device (PURPLE)</OPTION>\n";
+	}
+	
+	print <<END;
+	</SELECT>
+	</TD>
+	<TD WIDTH='15%' CLASS='base'>$tr{'source ip count'}:</TD>
+	<TD WIDTH='25%'>
+	<SELECT NAME='SOURCEIP'>
+END
+;
+	print "\t<OPTION ";
+	if ( $filterip eq 'All') {
+			print 'SELECTED ';
+	}
+	print "VALUE='All'>All</OPTION>\n";
+	for ($jj = 0; $jj <$nbips; $jj++) {
+	   if ($ip_list_sorted[$jj] ne '')
+	   {
+		print "\t<OPTION ";
+		if ($filterip eq $ip_list_sorted[$jj]) {
+			print 'SELECTED ';
+		}
+		print "VALUE='$ip_list_sorted[$jj]' ";
+		$k=$ip_counts{"$ip_list_sorted[$jj]"};
+		print ">$ip_list_sorted[$jj] [$k]</OPTION>\n";
+	   }
+	}
+	print <<END;
+	</SELECT>
+	</TD>
+        <TD WIDTH='10%' ALIGN='CENTER'><INPUT TYPE='submit' NAME='ACTION' VALUE='$tr{'update'}'></TD>
+        <TD WIDTH='10%' ALIGN='CENTER'><INPUT TYPE='submit' NAME='ACTION' VALUE='$tr{'export'}'></TD>
+</TR>
+<TR>
+    <TD WIDTH='15%' CLASS='base'>Protocol</TD>
+    <TD WIDTH='25%'>
+	 <SELECT NAME='PROTOCOL'>
+END
+;
+	print "\t<OPTION ";
+	if ( $filterproto eq 'All') {
+			print 'SELECTED ';
+	}
+	print "VALUE='All'>All</OPTION>\n";
+	if ($tcpprotofound)
+	{
+	  print "\t<OPTION ";
+	  if ( $filterproto eq 'TCP') {
+			print 'SELECTED ';
+	  }
+	  print "VALUE='TCP'>TCP</OPTION>\n";
+	}
+	if ($udpprotofound)
+	{
+	  print "\t<OPTION ";
+	  if ( $filterproto eq 'UDP') {
+			print 'SELECTED ';
+	  }
+	  print "VALUE='UDP'>UDP</OPTION>\n";
+	}
+	print <<END;
+	 </SELECT>
+    </TD>
+    <TD WIDTH='15%' CLASS='base'>Dst Port [count]:</TD>
+    <TD WIDTH='25%'>
+    	<SELECT NAME='DSTPORT'>
+END
+;
+	print "\t<OPTION ";
+	if ($filterport eq 'All') {
+		print 'SELECTED ';
+	}
+	print "VALUE='All'>All</OPTION>\n";
+	for ($jj = 0; $jj <$nbports; $jj++) {
+	    if ($port_list_sorted[$jj] ne '')
+	    {
+		print "\t<OPTION ";
+		if ($filterport eq $port_list_sorted[$jj]){
+			print 'SELECTED ';
+		}
+		print "VALUE='$port_list_sorted[$jj]' ";
+		$k=$port_counts{"$port_list_sorted[$jj]"};
+		print ">$port_list_sorted[$jj] [$k]</OPTION>\n";
+	    }
+	}
+	print <<END
+	</SELECT>
+    </TD>
+	<TD WIDTH='20%' COLSPAN=2 ALIGN='CENTER'>
+END
+;
+	print "<SELECT NAME='PAGINATE'>\n";
+	print "<OPTION VALUE='20' ";
+	if ($viewsize == 20 ) { print "SELECTED"; }
+	print ">Max 20 Logs/Page</OPTION/>\n";
+	print "<OPTION VALUE='40' ";
+	if ($viewsize == 40 ) { print "SELECTED"; }
+	print ">Max 40 Logs/Page</OPTION/>\n";
+	print "<OPTION VALUE='60' ";
+	if ($viewsize == 60 ) { print "SELECTED"; }
+	print ">Max 60 Logs/Page</OPTION/>\n";
+	print "<OPTION VALUE='80' ";
+	if ($viewsize == 80 ) { print "SELECTED"; }
+	print ">Max 80 Logs/Page</OPTION/>\n";
+	print "<OPTION VALUE='100' ";
+	if ($viewsize == 100 ) { print "SELECTED"; }
+	print ">Max 100 Logs/Page</OPTION/>\n";
+	print "<OPTION VALUE='150' ";
+	if ($viewsize == 150 ) { print "SELECTED"; }
+	print ">Max 150 Logs/Page</OPTION/>\n";
+	print "<OPTION VALUE='200' ";
+	if ($viewsize == 200 ) { print "SELECTED"; }
+	print ">Max 200 Logs/Page</OPTION/>\n";
+	print <<END
+	</SELECT></TD>
+</TR>
+</TABLE>
+</FORM>
+END
+;
+
+	&closebox();
+	# now display the actual log...
+
+	# calculate start and end positions.
+	$lines=0;
+
+	if ($start < 0 ) {
+		$start = 0;
+	}
+	if ($start > $total_lines) {
+		$start = $total_lines -1;
+	}
+
+#	if ($start >= $lines - $viewsize) { $start = $lines - $viewsize; };
+#	if ($start < 0) { $start = 0; }
+
+	my $prev = $start - $viewsize;
+	my $next = $start + $viewsize;
+
+	if ($prev < 0) { $prev = -1; }
+	if ($next >= $total_lines) { $next = $total_lines }
+	if ($start == 0) { $prev = -1; }
+
+	my $number_of_pages = int( $total_lines / $viewsize )+1;
+
+#	print "NUMBER OF PAGES=[$number_of_pages]<BR>\n";
+	my $page = 0;
+
+	my $max_number_of_pages = 20;
+
+	my ( $first_link, $last_link );
+
+	my $start_page = 0;
+	my $end_page = $number_of_pages;
+	my $tpage = $number_of_pages - int($start / $viewsize);
+	if ( $number_of_pages > $max_number_of_pages ){
+		$start_page = $tpage - int( $max_number_of_pages / 2 );
+		$end_page   = $tpage + int( $max_number_of_pages / 2 );
+
+		if ( $end_page > int( $lines / $viewsize ) ){
+			$start_page = int( $lines / $viewsize );
+			$end_page = $start_page;
+			$start_page -= $max_number_of_pages;
+		}
+		if ( $start_page < 0 ){
+			$start_page = 0;
+			$end_page = $max_number_of_pages;
+		}
+	}
+
+	my @slice = splice(@log, $start, $viewsize);
+
+#	print "NUMBER OF LINES=$total_lines<BR>\n";
+#	print "STRDEV=$strdev<BR>\n";
+#	print "FILTERIP=$filterip<BR>\n";
+	# display the header
+    if ($total_lines > 0)
+    {
+	if (!$Use_CIDR){
+		print "<center><font color=red>Your preferences file indicates that Blocked IPs using CIDR ranges will NOT be listed as already blocked.</font></center><BR>";
+	}
+	print "<center><font color=darkblue>$tr{'desc1'}</font></center>\n";
+	&openbox($tr{'logc'});
+
+	print <<END
+<table style='margin-left: auto; margin-right: auto;'>
+<tr>
+END
+;
+	if ( $number_of_pages >= 2 )
+	{
+		if ($prev != -1) {
+			print "<td style='vertical-align: top;text-align: center;'><a href='/cgi-bin/logs.cgi/firewalllog.dat?$prev,$cgiparams{'MONTH'},$cgiparams{'DAY'},$showblocked,$strdev,$filterip,$filterproto,$filterport,$viewsize'>&lt; Sm</a></td>"; 	
+		} else {
+			print "<td style='vertical-align: top;text-align: center'>&lt; Sm</td>"; 
+		}
+		for ( my $i = 0; $i<$total_lines ; $i += $viewsize ){
+			my $page = int( ($i / $viewsize)+1 );
+			
+			if ( $page >= $start_page and $page <= $end_page ){
+				$curpage=$page;
+				#if ( ($i <=  $start) && ($i > ($start - $viewsize))) {
+				#if ( ($i <=  $start) && ($i > ($start - $viewsize)))  {
+				if ( ($i >=  $start) && ($i < ($start + $viewsize)))  {
+					print "<td style='vertical-align: top;text-align: center;'><font color=red><B>o</B><font><br/><span style='color: #a0a0a0; font-size: 7px;'>$curpage</span></a></td>";
+					$current_page=$curpage;
+					} else {
+					print "<td style='vertical-align: top;text-align: center;'><a href='/cgi-bin/logs.cgi/firewalllog.dat?$i,$cgiparams{'MONTH'},$cgiparams{'DAY'},$showblocked,$strdev,$filterip,$filterproto,$filterport,$viewsize'>o<br/><span style='color: #a0a0a0; font-size: 7px;'>$curpage</span></a></td>"
+				}
+			}	
+		}
+
+#print "NUMBER OF PAGES=[$number_of_pages]<BR>\n";
+#print "CURRENT_PAGE=[$current_page]<BR>\n";
+#print "ENDPAGE=[$end_page]<BR>\n";
+
+		if ($current_page != $end_page) {
+			print "<td style='vertical-align: top;text-align: center;'><a href='/cgi-bin/logs.cgi/firewalllog.dat?$next,$cgiparams{'MONTH'},$cgiparams{'DAY'},$showblocked,$strdev,$filterip,$filterproto,$filterport,$viewsize'>th &gt;</a></td>"; 
+		} else {
+			print "<td style='vertical-align: top;text-align: center;'>th &gt;</td>"; 
+		}
+	}
+
+	print <<END
+	</tr>
+</table>
+<form method='get'>
+<table style='border-collapse: collapse; border: 0px; width: 100%;'>
+<tr>
+	<th style='width: 10%;  border-right: solid 1px #909090;'>$tr{'time'}</th>
+	<th style='width: 10%;  border-right: solid 1px #909090;'>$tr{'in'} &raquo $tr{'out'}</th>
+	<th style='width: 8%;  border-right: solid 1px #909090;'>$tr{'protocol'}</th>
+	<th style='width: 1%;   '></th>
+	<th style='width: 15%; '>$tr{'source'}</th>
+	<th style='width: 2%;   border-right: solid 1px #909090;'></th>
+	<th style='width: 15%; border-right: solid 1px #909090;'>$tr{'src port'}</th>
+	<th style='width: 1%;   '></th>
+	<th style='width: 15%; '>$tr{'destination'}</th>
+	<th style='width: 2%;   border-right: solid 1px #909090;'></th>
+	<th style='width: 15%; '>$tr{'dst port'}</th>
+</tr>
+END
+;
+
+	$lines = 0;
+        my $srccolor;
+	my $dstcolor;
+	my $srcdevcolor;
+	my $dstdevcolor;
+	# START PRINTING THE LOG LINES
+	for ($i=$total_lines-$start-1; $lines<$viewsize && $i>=0; $i--)
+	{
+		if ($lines % 2) {
+			print "<tr class='light'>\n"; 
+		} else {
+			print "<tr class='dark'>\n"; 
+		}
+		$srccolor='#000000';
+		$srcdevcolor='#000000';
+		$dstdevcolor='#000000';
+		if ($log_in[$i] eq $red_device) {
+			$srcdevcolor=$Red_Color;
+		}
+		if ($log_in[$i] eq $green_device) {
+			$srcdevcolor=$Green_Color;
+		}
+		if ($log_in[$i] eq $orange_device) {
+			$srcdevcolor=$Orange_Color;
+		}
+		if ($log_in[$i] eq $purple_device) {
+			$srcdevcolor=$Purple_Color;
+		}
+		if ($log_out[$i] eq $red_device) {
+			$dstdevcolor=$Red_Color;
+		}
+		if ($log_out[$i] eq $green_device) {
+			$dstdevcolor=$Green_Color;
+		}
+		if ($log_out[$i] eq $orange_device) {
+			$dstdevcolor=$Orange_Color;
+		}
+		if ($log_out[$i] eq $purple_device) {
+			$dstdevcolor=$Purple_Color;
+		}
+		$onesrcip = '';
+		$onedstip = '';
+		@ipnumbers=  split(/\./, $log_src[$i]);
+		$onesrcip =  $ipnumbers[0] . "." . $ipnumbers[1] . "." . $ipnumbers[2];
+		@ipnumbers= split(/\./, $log_dst[$i]);
+		$onedstip =  $ipnumbers[0] . "." . $ipnumbers[1] . "." . $ipnumbers[2];
+
+		if ($log_dst[$i] eq $red_ip ) {
+			$srccolor=$Red_Color;
+			$dstcolor=$Green_Color;
+		} else {
+			if ($onesrcip eq $GREEN_MASK) { 
+				$srccolor=$Green_Color;
+			}
+			else {
+				if ($onesrcip eq $ORANGE_MASK) { 
+					$srccolor=$Orange_Color;
+				}
+				else {
+					if ($onesrcip eq $PURPLE_MASK) {
+						$srccolor=$Purple_Color;
+					}
+					else {
+						$srccolor=$Red_Color;
+					}
+				}
+			}
+			if ($onedstip eq $GREEN_MASK) {
+				 $dstcolor=$Green_Color;
+			}
+			else {
+				if ($onedstip eq $ORANGE_MASK) {
+					$dstcolor=$Orange_Color;
+				}
+				else
+				{
+					if ($onedstip eq $PURPLE_MASK) {
+						$dstcolor=$Purple_Color;
+					}
+					else {
+						$dstcolor=$Red_Color;
+					}
+				}
+			}
+
+		}
+		if (($log_src[$i] eq "127.0.0.1") ||
+		    ($log_src[$i] eq "0.0.0.0"))	{
+			$srccolor=$Green_Color;
+		}
+		if (($log_dst[$i] eq "255.255.255.255") ||
+		    ($log_dst[$i] eq "127.0.0.1")) {
+			$dstcolor=$Green_Color;
+		}
+		
+		if ($log_in[$i] eq $log_out[$i]) {
+			$log_out[$i]='';
+		}
+
+		print <<END
+	<td style='text-align: center; border-right: solid 1px #909090;'>$log_time[$i]</td>
+	<td style='text-align: center; border-right: solid 1px #909090;'><font color=$srcdevcolor>$log_in[$i]</font> &raquo <font color=$dstdevcolor>$log_out[$i]</font></td>
+	<td style='text-align: center; border-right: solid 1px #909090;'>$log_protostr[$i]</td>
+	<td style='text-align: center;'>
+END
+;
+		if ($ipblocked{$log_src[$i]} eq '')
+		{
+			push @clear_sections, "$lines$log_src[$i]";
+			push @clear_sections, "$lines$log_dst[$i]";
+			print <<END
+		<div onMouseOver="sub_menu_show('$lines$log_src[$i]');" onMouseOut='sub_menu_clear();' class='toolbox' id='a$lines$log_src[$i]'></div>
+END
+;
+		}
+		print <<END
+	</td>
+	<td style='text-align: left; white-space: nowrap;'>
+		<input type='checkbox' name='ip' value='$log_src[$i]'/>
+		<span onClick="sub_menu_show('$lines$log_src[$i]', '$log_src[$i]');" onMouseOut="sub_menu_clear();"><font color=$srccolor>$log_src[$i]</font> <sup>[$ip_counts{"$log_src[$i]"}]</sup></span>
+	</td>
+	<td style='width: 7px; text-align: center; border-right: solid 1px #909090;'>
+END
+		;
+		if ( $ipblocked{$log_src[$i]} == '1') {
+			print "<img src='$activeipblockimg' width=10 ";
+		}
+		else {
+		   if ($ipblocked{$log_src[$i]} == '2') {
+			print "<img src='$ipblockimg' width=10 ";
+		   }
+		   else {
+			print "<img src='/ui/img/down.png' ";
+		   }
+		}
+		print <<END
+	 alt='tools' onClick="sub_menu_show('$lines$log_src[$i]', '$log_src[$i]');" >
+	</td>
+	<td style='text-align: left; border-right: solid 1px #909090;'>$log_srcportstr[$i]</td>
+	<td style='text-align: center;'>
+		<div onMouseOver="sub_menu_show('$lines$log_dst[$i]')" onMouseOut='sub_menu_clear();' class='toolbox' id='a$lines$log_dst[$i]'></div></td>
+	<td style='text-align: left;'><input type='checkbox' name='ip' value='$log_dst[$i]'><span onMouseOver="update( '$log_dst[$i]', '$lines$log_dst[$i]' );" onClick="sub_menu_show('$lines$log_dst[$i]');" onMouseOut="sub_menu_clear();"><font color=$dstcolor>$log_dst[$i]</font></span></td>
+	<td style='text-align: center; border-right: solid 1px #909090;' onClick="update( '$log_dst[$i]', '$lines$log_dst[$i]' ); sub_menu_show('$lines$log_dst[$i]');" ><img src='/ui/img/down.png' alt='tools'></td>
+	<td style='text-align: left;'>$log_dstportstr[$i] <sup><font color=black>[$port_counts{"$log_dstportstr[$i]"}]</font></sup></td>
+</tr>
+END
+		;
+		$lines++;
+		$printedout++;
+	}
+
+	print <<END
+</table>
+<BR>
+<table style='border-collapse: collapse; border: 2px; width: 100%; background-color: #ffffff;'>
+<tr WIDTH=20% BORDER=1>
+	<td style='text-align: left;'>
+END
+	;
+	if ($total_lines > $viewsize) {
+		print "&nbsp;&nbsp;<B>Logs listed:</B> $printedout (out of $total_lines)";
+	}
+	else {
+		print "&nbsp;&nbsp;<B>Logs listed:</B> $total_lines";
+	}
+	print <<END
+	</td>
+	<td style='text-align: right;'>
+		<input type='submit' name='ACTION' value='$tr{'lookup'}'>
+		<input type='submit' name='ACTION' value='$tr{'add to ip block'}'>
+	</td>
+</tr>
+</table>
+</form>
+END
+;
+#print "<PRE>";
+#print "RED_DEVICE=$red_device\n";
+#print "RED_ADDRESS=$red_ip\n";
+#print "GREEN_DEVICE=$green_device\n";
+#print "GREEN_ADDRESS=$green_ip\n";
+#print "GREEN_NETADDRESS=$green_network\n";
+#print "GREEN_MASK=$GREEN_MASK\n";
+#print "ORANGE_DEVICE=$orange_device\n";
+#print "ORANGE_ADDRESS=$orange_ip\n";
+#print "ORANGE_NETADDRESS=$orange_network\n";
+#print "ORANGE_MASK=$ORANGE_MASK\n";
+#print "PURPLE_DEVICE=$purple_device\n";
+#print "PURPLE_ADDRESS=$purple_ip\n";
+#print "PURPLE_NETADDRESS=$purple_network\n";
+#print "PURPLE_MASK=$PURPLE_MASK\n";
+#print "</PRE>";
+
+	&closebox();
+    }
+    else
+    {
+	&openbox($tr{'logc'});
+
+	            print <<END
+		    <table style='margin-left: auto; margin-right: auto;'>
+		    <tr>
+		    <th style='text-align: right;'>No results are available for your settings</th>
+		    </tr>
+		    </table><BR>
+END
+;
+	&closebox($tr{'logc'});
+    }
+
+	print <<END
+	<script type='text/javascript'>
+	//<!--
+		function sub_menu_clear( me )
+		{
+END
+;
+
+	foreach my $option ( @clear_sections ){
+		print "\t\t\tif( me != '$option') document.getElementById('a$option').style.display = 'none';\n";
+	}
+
+print <<END
+		}
+		function sub_menu_show( what, updatev ){
+			if ( updatev ){
+				update( updatev, what );
+			}
+			sub_menu_clear();
+			document.getElementById('a'+what).style.display = 'block';
+		}
+	//-->
+	</script>
+END
+	;
+
+	print $menu_html;
+
+
+
+	&alertbox('add','add');
+
+	&closebigbox();
+	print "<CENTER><FONT SIZE=1 COLOR=black>For questions or comments, please visit the \"</FONT><A HREF=\"http://community.smoothwall.org/forum/viewtopic.php?f=26&t=34526\" TARGET=_blank><FONT SIZE=1 COLOR=darkblue><U>[3.0] Enhanced Firewall Logs MOD</U></FONT></A><FONT SIZE=1 COLOR=black>\" Smoothwall Discussion Forum.</FONT></CENTER>";
+
+	&closepage();
+}
+
+sub gethithash
+{
+	my $line = $_[0];
+	my $hash = $_[1];
+	my $name; my $value;
+
+	my @line = split(/ /, $line);
+	foreach (@line)
+	{
+		($name, $value) = split(/\=/);
+		$hash->{$name} = $value;
+	}
+}
+
+
+sub mouseover
+{
+	my ( $id, $time, $in, $out, $protocol, $src, $srcpt, $dst, $dstpt ) = @_;
+
+	my $html_section = qq{ IP address $dst was accessed on port $dstpt by IP address $src ($srcpt) via $protocol ($in/$out) };
+
+	&tooltip( $html_section );
+}

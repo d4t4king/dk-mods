@@ -1,0 +1,9 @@
+AuthName "Restricted"
+AuthType Basic
+AuthUserFile /var/smoothwall/auth/users
+
+<Files pgraphs.cgi>
+require user admin
+</Files>
+
+require user admin

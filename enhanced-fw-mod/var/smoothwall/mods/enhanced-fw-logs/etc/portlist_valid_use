@@ -1,0 +1,273 @@
+3	TCP	Valid use - Game: F22
+5	TCP	Valid use - Apple Remote Desktop
+22	TCP	Valid use - AudioReQuest
+22	UDP	Valid Use - pcAnywhere Host, AudioReQuest
+30	TCP	Valid use - ATC Battlefield 1942, ATC Ghost Recon 2, ATC Splinter Cell Chaos Theory, ATC Splinter Cell Pandora Tomorrow
+30	UDP	Valid use - ATC Battlefield 1942, ATC Ghost Recon 2, ATC Splinter Cell Chaos Theory, ATC Splinter Cell Pandora Tomorrow
+47	TCP	Valid use - Battlefield VietNam
+57	TCP	Valid use - AudioReQuest
+57	UDP	Valid use - AudioReQuest
+80	TCP	Valid Use - Game: Aliens vs. Predator. Other: Dialpad, Yahoo File Transfer, BarracudaDrive, Battlefield 2
+80	UDP	Valid use - AudioReQuest
+111	TCP	Valid use - Battlefield VietNam
+123	UDP	Valid Use - Network Time Protocol
+177	UDP	Valid Use - Battle Realms-Ubisoft
+300	TCP	Valid use - Age of Empires III
+328	TCP	Valid use - Apple Remote Desktop
+359	TCP	Valid use - Apple Remote Desktop
+367	UDP	Valid use - Aleph One
+389	TCP	Valid use - PGP Automatic Verification.
+422	UDP	Valid use - Aleph One
+443	TCP	Valid use - BarracudaDrive
+466	TCP	Valid use - Battlefield VietNam
+471	UDP	Valid Use - Battle Realms-Ubisoft
+500	TCP	Valid use - PGP use, also other SSL encryption programs, Bay VPN
+500	UDP	Valid use - PGP use, also other SSL encryption programs, Bay VPN
+515	TCP	Valid use - Unix Printer Spooler.
+554	TCP	Valid Use - QuickTime 4 Client or RealAudio
+615	UDP	Valid use - Aleph One
+717	UDP	Valid Use - Battle Realms-Ubisoft
+728	TCP	Valid use - Battlefield VietNam
+757	UDP	Valid Use - Battle Realms-Ubisoft
+799	TCP	Valid Use - Remotely Possible Server
+802	TCP	Valid use - Age of Empires III
+900	TCP	Valid use - Battlefield VietNam
+988	TCP	Valid use - Apple Remote Desktop
+1140	TCP	Valid use - Dwyco Video Conferencing or Westwood Online - C&C Tiberian Sun, Dune 2000
+1214	TCP	Valid use - Dwyco Video Conferencing or Morpheus or Kazaa File Sharing
+1234	TCP	Valid use - Dwyco Video Conferencing or Westwood Online - C&C Tiberian Sun, Dune 2000
+1352	TCP	Valid use - Dwyco Video Conferencing or Lotus Notes Host
+1414	UDP	Valid use - CuSeeMe or Dwyco Video Conferencing
+1424	UDP	Valid use - CuSeeMe or Dwyco Video Conferencing
+1503	TCP	Valid use - CuSeeMe or Dwyco Video Conferencing
+1547	TCP	Valid Use - Laplink Host or Dwyco Video Conferencing
+1584	TCP	Valid use - Dialpad or Dwyco Video Conferencing
+1585	TCP	Valid use - Dialpad or Dwyco Video Conferencing
+1680	TCP	Valid use - Dwyco Video Conferencing or CarbonCopy v5.0
+1716	UDP	Valid use - America's Army
+1717	UDP	Valid use - America's Army
+1718	UDP	Valid use - America's Army
+1720	TCP	Valid use - CuSeeMe or Dwyco Video Conferencing
+1812	UDP	Valid use - CuSeeMe or Dwyco Video Conferencing
+1813	UDP	Valid use - CuSeeMe or Dwyco Video Conferencing
+1863	TCP	Valid use - Dwyco Video Conferencing or MSN Messenger
+2090	TCP	Valid use - Go2Call or Dwyco Video Conferencing or DynSite Updates
+2091	TCP	Valid use - Go2Call or Dwyco Video Conferencing
+2233	TCP	Valid use - Shiva VPN or Dwyco Video Conferencing
+2346	TCP	Valid Use - (game) Rainbow Six or Rogue Spear or Dwyco Video Conferencing
+3000	TCP	Valid use - Dwyco Video Conferencing or Active Worlds File Transfers or Calista IP Phone (UDP in)
+3333	TCP	Valid use - ATC Battlefield 2, ATC Rainbow Six Lockdown
+3333	UDP	Valid use - ATC Battlefield 2, ATC Rainbow Six Lockdown
+3389	TCP	Valid use - Dwyco Video Conferencing or Windows 2000 Terminal Server
+3453	TCP	Valid use - Dwyco Video Conferencing or (games) Bungie.net, Myth, Myth II Server
+3568	TCP	Valid use - Dwyco Video Conferencing or (game) Delta Force
+3660	TCP	Valid use - AudioReQuest
+3660	UDP	Valid use - AudioReQuest
+3663	TCP	Valid use - AudioReQuest
+3663	UDP	Valid use - AudioReQuest
+3823	UDP	Valid use - Apple Remote Desktop
+3996	TCP	Valid use - Dwyco Video Conferencing or Remote Anything
+3997	TCP	Valid use - Dwyco Video Conferencing or Remote Anything
+3998	TCP	Valid use - Dwyco Video Conferencing or Remote Anything
+3999	TCP	Valid use - Dwyco Video Conferencing or Remote Anything
+4000	TCP	Valid use - Dwyco Video Conferencing or Remote Anything or (games) Westwood Online - C&C Tiberian Sun, Dune 2000, ICQ.
+4099	TCP	Valid use - Dwyco Video Conferencing or AIM Talk (out)
+4226	TCP	Valid use - Aleph One
+4444	TCP	Valid use - Dwyco Video Conferencing or Napster Directory Server
+4555	UDP	Valid use - Battlefield Vietnam
+4556	UDP	Valid use - Battlefield Vietnam
+4557	UDP	Valid use - Battlefield Vietnam
+4660	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4661	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4662	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4663	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4664	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4665	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net,  AudioReQuest
+4665	UDP	Valid use - AudioReQuest
+4666	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4667	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4668	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4669	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4670	TCP	Valid use - Dwyco Video Conferencing or Voice-On-Net
+4747	TCP	Valid use - Apprentice
+4871	TCP	Valid use - 3-in-a-Bed
+4899	TCP	Valid use - Dwyco Video Conferencing or Radmin (Fama Tech)
+5000 - 5010	UDP	Valid use - Yahoo Voice Chat
+5001	TCP	Valid Use - (game) Ultima
+5002	TCP	Valid Use - (game) Ultima
+5003	TCP	Valid Use - (game) Ultima
+5004	TCP	Valid Use - (game) Ultima
+5005	TCP	Valid Use - (game) Ultima
+5006	TCP	Valid Use - (game) Ultima
+5007	TCP	Valid Use - (game) Ultima
+5008	TCP	Valid Use - (game) Ultima
+5009	TCP	Valid Use - (game) Ultima
+5010	TCP	Valid Use - (game) Ultima
+5050	TCP	Valid use - Yahoo Messenger
+5100	TCP	Valid use - Yahoo Super Webcam
+5101	TCP	Valid use - Yahoo P2P Instant Messages
+5190	TCP	Valid use - AIM Talk [AOL IM] (in) or Calista IP Phone (out).
+5222	TCP	Valid Use - KaVoom! (software KVM)
+5310	TCP	Valid Use - (game) Outlaws
+5424	TCP	Valid use - Beyond Remote
+5424	UDP	Valid use - Beyond Remote
+5497	TCP	Valid use - Hotline Connect
+5498	TCP	Valid use - Hotline Connect
+5500	TCP	Valid Use - Virtual Network Computing (VNC) or Hotline Connect
+5501	TCP	Valid use - Hotline Connect
+5555	TCP	Valid use - Napster directory server.
+5631	TCP	Valid Use - pcAnywhere Host
+5632	UDP	Valid Use - pcAnywhere Host
+5670	TCP	Valid Use - Active Worlds
+5800	TCP	Valid Use - Virtual Network Computing (VNC)
+5900	TCP	Valid Use - Virtual Network Computing (VNC)
+6073	UDP	Age of Empires (see also port #2300), Battlecom
+6097	TCP	Valid use - Napster Client
+6112	UDP	Valid Use - (game) Starcraft, Blueserver (TCP also)
+6120	TCP	Valid use - Napster Client
+6336	TCP	Valid use - Napster Client
+6346	TCP	Valid use - Gnutella file exchange. Also used by Napster Client.
+6348	TCP	Valid Use - Audio Galaxy (MP3 Sharing)
+6666	TCP	Valid use - Napster directory server or (game) KALI.  APC UPS Service.
+6667	TCP	Valid Use - MS Game Zone  APC UPS Service.
+6668	TCP	Valid Use - APC UPS Service.
+6688	TCP	Valid use - Possibly misconfigured Napster
+6697	TCP	Valid use - Napster Client
+6698	TCP	Valid use - Napster Client
+6699	TCP	Valid use - Napster Port (beta 7)
+6801	UDP	Valid use - Net2Phone (and any of 1-3000)
+6880	TCP	Valid use - Delta Three PC to Phone
+6901	TCP	Valid use - MSN Messenger (voice chat)
+6970	TCP	Valid use - QuickTime 4 Server or RealAudio (6970 through 7170)
+7000	TCP	Valid Use - Active Worlds (can use from 7000-7100)
+7070	TCP	Valid Use - Active Worlds (can use 7000-7100) or RealAudio
+7640	TCP	Valid use - CuSeeMe
+7642	TCP	Valid use - CuSeeMe
+7648	TCP	Valid use - CuSeeMe
+7649	TCP	Valid use - CuSeeMe
+7775	TCP	Valid Use - (game) Ultima
+7776	TCP	Valid Use - (game) Ultima
+7777	TCP	Valid use - Napster directory server or Active Worlds or (game) Ultima
+7778	TCP	Valid use - Unreal Tournament
+7845	UDP	Valid Use - (game) ZNES
+7875	TCP	Valid Use - (game) Ultima (UOMonitor)
+8000	TCP	Valid Use - ShoutCast Server or Game: Aliens vs. Predator
+8001	TCP	Valid Use - ShoutCast Server
+8002	TCP	Valid Use - ShoutCast Server
+8003	TCP	Valid Use - ShoutCast Server
+8004	TCP	Valid Use - ShoutCast Server
+8005	TCP	Valid Use - ShoutCast Server
+8080	TCP	Valid Use - Unreal Tourney Server Admin
+8680	TCP	Valid use - Dialpad
+8681	TCP	Valid use - Dialpad
+8682	TCP	Valid use - Dialpad
+8683	TCP	Valid use - Dialpad
+8684	TCP	Valid use - Dialpad
+8685	TCP	Valid use - Dialpad
+8686	TCP	Valid use - Dialpad
+8777	UDP	Valid use - America's Army
+8875	TCP	Valid use - Napster Redirector
+8888	TCP	Valid use - Napster directory server or OpenNap or (game) Ultima (patch)
+9000	UDP	Valid Use - Asheron's Call (in/out - May use from 9000-9013)
+9001	UDP	Valid Use - Asheron's Call (in)
+9004	UDP	Valid Use - Asheron's Call (in/out)
+9005	UDP	Valid Use - Asheron's Call (in)
+9008	UDP	Valid Use - Asheron's Call (out)
+9012	UDP	Valid Use - Asheron's Call (in/out)
+9013	UDP	Valid Use - Asheron's Call (in)
+9442	UDP	Valid Use - (game) Need for Speed - Porsche
+9999	TCP	Valid Use - (game) Ultima (patch)
+10000	TCP	Valid Use - Bit Tornado
+10001	TCP	Valid Use - Bit Tornado
+10002	TCP	Valid Use - Bit Tornado
+10003	TCP	Valid Use - Bit Tornado
+10004	TCP	Valid Use - Bit Tornado
+10005	TCP	Valid Use - Bit Tornado
+10006	TCP	Valid Use - Bit Tornado
+10007	TCP	Valid Use - Bit Tornado
+10008	TCP	Valid Use - Bit Tornado
+10009	TCP	Valid Use - Bit Tornado
+10010	TCP	Valid Use - Bit Tornado
+11370	TCP	Valid use - PGP Automatic Verification.
+11371	TCP	Valid use - PGP Automatic Verification.
+12053	UDP	Valid use - Dwyco Video Conferencing or Delta Three PC to Phone
+12080	UDP	Valid use - Dwyco Video Conferencing or Delta Three PC to Phone
+12083	UDP	Valid use - Dwyco Video Conferencing or Delta Three PC to Phone
+12120	UDP	Valid use - Dwyco Video Conferencing or Delta Three PC to Phone
+12122	UDP	Valid use - Dwyco Video Conferencing or Delta Three PC to Phone
+14567	UDP	Valid use - Battlefield 1942
+15567	UDP	Valid use - Battlefield Vietnam
+15690	UDP	Valid use - Battlefield Vietnam
+16000	UDP	Valid use - Dwyco Video Conferencing or (game) Motorhead Server
+16567	UDP	Valid use - Battlefield 2
+20025	TCP	Valid use - America's Army
+20045	TCP	Valid use - America's Army
+20046	TCP	Valid use - America's Army
+22222	TCP	Valid use - University of Ky: Internet Tic-Tac-Toe (Announce Messages)
+22223	TCP	Valid use - University of Ky: Internet Tic-Tac-Toe (Outcome Messages)
+23000	UDP	Valid use - Battlefield Vietnam
+23001	UDP	Valid use - Battlefield Vietnam
+23002	UDP	Valid use - Battlefield Vietnam
+23003	UDP	Valid use - Battlefield Vietnam
+23004	UDP	Valid use - Battlefield Vietnam
+23005	UDP	Valid use - Battlefield Vietnam
+23006	UDP	Valid use - Battlefield Vietnam
+23007	UDP	Valid use - Battlefield Vietnam
+23008	UDP	Valid use - Battlefield Vietnam
+23009	UDP	Valid use - Battlefield Vietnam
+24032	UDP	Valid use - CuSeeMe
+24150	UDP	Valid use - Delta Three PC to Phone
+24151	UDP	Valid use - Delta Three PC to Phone
+24152	UDP	Valid use - Delta Three PC to Phone
+24153	UDP	Valid use - Delta Three PC to Phone
+24154	UDP	Valid use - Delta Three PC to Phone
+24155	UDP	Valid use - Delta Three PC to Phone
+24156	UDP	Valid use - Delta Three PC to Phone
+24157	UDP	Valid use - Delta Three PC to Phone
+24158	UDP	Valid use - Delta Three PC to Phone
+24159	UDP	Valid use - Delta Three PC to Phone
+24160	UDP	Valid use - Delta Three PC to Phone
+24161	UDP	Valid use - Delta Three PC to Phone
+24162	UDP	Valid use - Delta Three PC to Phone
+24163	UDP	Valid use - Delta Three PC to Phone
+24164	UDP	Valid use - Delta Three PC to Phone
+24165	UDP	Valid use - Delta Three PC to Phone
+24166	UDP	Valid use - Delta Three PC to Phone
+24167	UDP	Valid use - Delta Three PC to Phone
+24168	UDP	Valid use - Delta Three PC to Phone
+24169	UDP	Valid use - Delta Three PC to Phone
+24170	UDP	Valid use - Delta Three PC to Phone
+24171	UDP	Valid use - Delta Three PC to Phone
+24172	UDP	Valid use - Delta Three PC to Phone
+24173	UDP	Valid use - Delta Three PC to Phone
+24174	UDP	Valid use - Delta Three PC to Phone
+24175	UDP	Valid use - Delta Three PC to Phone
+24176	UDP	Valid use - Delta Three PC to Phone
+24177	UDP	Valid use - Delta Three PC to Phone
+24178	UDP	Valid use - Delta Three PC to Phone
+24179	UDP	Valid use - Delta Three PC to Phone
+26000	UDP	Valid Use - Elite Force (game) - Quake
+26214	TCP	Valid Use - Dark Reigh 2 (game)
+26900	UDP	Valid Use - Hexen II (for 1st player)
+27015	TCP	Valid use - Half-Life Gamer Use Port - Team Fortress Classic (TFC) - Counterstrike - Day of Defeat
+27374	TCP	Valid use - Address Search Protocol (ASP - IANA)
+27500	UDP	Valid Use - Elite Force (game)
+27900	UDP	Valid Use - America's Army, Battlefield 2, Battlefield Vietnam
+27910	UDP	Valid use - Quake II Gamer Use Port or Elite Force
+27960	UDP	Valid use - Quake II Gamer Use Port or Elite Force
+28910	TCP	Valid use - Heretic II Gamer Use Port, Battlefield 2 (UDP)
+28911	TCP	Valid use - Heretic II Gamer Use Port
+29900	TCP	Valid use - Battlefield 2
+29901	TCP	Valid use - Battlefield 2
+39213	UDP	Valid use - Sygate Manager
+44334	TCP	Valid use - TinySoft Tiny Personal Firewall use.
+44488	TCP	Valid use - BackupStream
+44488	UDP	Valid use - BackupStream
+47624	TCP	Valid use - Battlecom
+51200	UDP	Valid use - Dialpad
+51201	UDP	Valid use - Dialpad
+51210	TCP	Valid use - Dialpad
+55123	UDP	Valid use - Battlefield 2
+55124	UDP	Valid use - Battlefield 2
+55125	UDP	Valid use - Battlefield 2
+56800	UDP	Valid use - CuSeeMe

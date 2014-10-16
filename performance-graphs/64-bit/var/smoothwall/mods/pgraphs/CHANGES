@@ -1,0 +1,25 @@
+Performance graphs
+
+v1.3	01/22/2007
+	Convert to modlib
+v1.4    28/06/2009
+        Add disk traffic, disk filesystem traffic, memory detail, uptime
+        Add Configure facility
+	Speed up conntrack
+        Stop memory and squid from collecting by default.
+        Hide Voltage and Temperature options
+	remove the cache_object: entries from the Web Proxy log screen
+
+v1.5	Add ping and red-availability (use /usr/bin/fping).
+        Add diskused.
+        Configure can now also re-order the graphs and turn off the summary.
+
+v1.6 For Roadster
+        - restore voltage and temperature, add fan
+        - log format changed (firewall hits)
+        - language files moved
+        - disk status reply has moved (disk io)
+
+v1.6 For Smoothwall 3.1 
+        16_01 - log format changed (firewall hits)
+        16_02 - fix rrdtool_diskused.pl code - unable to create new .rrd file

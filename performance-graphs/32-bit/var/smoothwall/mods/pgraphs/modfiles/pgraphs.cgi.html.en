@@ -1,0 +1,76 @@
+<P><FONT SIZE='3'><B><U>Performance Graphs</U></B></FONT></P>
+
+<P>This page contains information about the performance of your firewall.</P>
+
+<P>This page is capable of showing graphs created by various rrdtool scripts, 
+not all of which may be installed or active on your system.</P>
+
+<P><B>Firewall hits:</B> rrdtool_firewall.pl<br>
+Number of hits per minute on the firewall.</P>
+
+<P><B>Masqueraded and Direct connections:</B> rrdtool_conntrack.pl<br>
+Number of connections from your Smoothie, both UDP and TCP.
+When an address is masqueraded an incoming packet will have its destination address modified, 
+and the outgoing packet will have its source address modified. Also known as NAT.
+Direct connections do not have their addresses translated.</P>
+
+<P><B>Memory Usage:</B> rrdtool_perf.pl<br>
+Memory used by Smoothwall. It is usual for this to rise to 98% of the physical memory, 
+but the swap file is not often used. High or climbing swap usage are the "memory problem" in Linux. 
+Swap space is a section of the hard drive used as memory when the machine has run out of physical RAM, 
+Hard drives are however much slower than RAM, so this needs to be looked at. 
+<br>Now replaced by Memory Breakdown.</P>
+
+<P><B>Memory Breakdown:</B> rrdtool_memoryx.pl<br>
+This is the same graph as Memory Usage, but with the physical memory usage broken down into memory allocated to Processes, Cache, Buffers. 
+</P>
+
+<P><B>Load Average:</B> rrdtool_perf.pl<br>
+The load average is the sum of the run queue length and the number of jobs currently running on the CPUs. 
+For more information see <A href="http://www.teamquest.com/resources/gunther/display/5/index.htm">here</a></P>
+
+<P><B>CPU load:</B> rrdtool_perf.pl<br>
+Percentage of the CPU used.</P>
+
+<P><B>Disk Activity ios and bytes:</B> rrdtool_disk.pl<br>
+Monitors the disk activity on /dev/hda or /dev/sda on the system. Some reads and writes are merged with neighbouring reads and writes and this produces a lower number of physical ios compared with the number of ios actually requested.</P>
+
+<P><B>Disk filesystem ios and bytes:</B> rrdtool_diskx.pl<br>
+Monitors the disk by activity by partition/filesystem. Assumes the standard Smoothwall partition allocation has been used.</P>
+
+<P><B>Hard Disk temperature:</B> rrdtool_hddtemp.pl<br>
+If your disk is SMART enabled then this should show the temperature of /dev/hda or /dev/sda. 
+If it does not then you may need to edit /usr/share/misc/hddtemp.db to include your disk type.</P>
+
+<P><B>Squid Web Proxy:</B> rrdtool_squid.pl<br>
+Total Disk space used by the cache. This can use a lot of cpu to run so is disabled by default. If Squid is running the same information is in the next graph.</P>
+
+<P><B>Squid activity:</B> rrdtool_squidx.pl<br>
+Percentage of disk cache in use, 
+Percentage of requests served from cache, 
+Percentage of bytes served from cache.</P>
+
+<P><B>Squid requests:</B> rrdtool_squidx.pl<br>
+How many requests per second Squid is handling and how many are returned from the cache.</P>
+
+<P><B>Squid bytes:</B> rrdtool_squidx.pl<br>
+How many bytes per second Squid is returning to clients, 
+how many have to be pulled from the red size (cache miss) and how many are returned from the cache.</P>
+
+<P><B>Squid response:</B> rrdtool_squidx.pl<br>
+How long Squid takes to serve a request and how much of that time is the DNS lookup.</P>
+
+<P><B>Squid memory:</B> rrdtool_squidx.pl<br>
+This is a record of the memory used by squid. 
+Squid keeps track of some of its memory (accounted) and also has the memory used by the process itself.</P>
+
+<P><B>Squid paging:</B> rrdtool_squidx.pl<br>
+The counts the number of paging requests by squid which require an actual physical i/o to take place. 
+This should be near to zero at all times.</P>
+
+<P><B>Uptime:</B> rrdtool_uptime.pl<br>
+The monitors the time that the system is running, showing an average figure since monitoring began and a last 5 mins line to show when the system was down.</P>
+
+<P><B>Customise:</B><br>
+You can choose which data is collected and which graphs are shown by selecting the corresponding boxes which will appear at the bottom of the screen after Customise is clicked. This does not remove /etc/crontab entries but merely stops data collection. If you wish to edit the crontab I recommend s-t-p's Crontool mod.</P>
+

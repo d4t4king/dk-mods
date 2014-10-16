@@ -1,0 +1,7 @@
+MOD_NAME=enhanced-fw-logs
+MOD_LONG_NAME=[3.0] Enhanced Firewall Logs MOD V1.4.4
+MOD_DIR=/var/smoothwall/mods/$(MOD_NAME)
+MOD_VERSION=1.4.4
+MOD_INFO=This mod provides an enhanced experience when displaying firewall logs.
+MOD_FORUM=http://community.smoothwall.org/forum/viewtopic.php?f=26&t=34526
+

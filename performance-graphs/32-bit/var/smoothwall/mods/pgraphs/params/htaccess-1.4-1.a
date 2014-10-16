@@ -1,0 +1,4 @@
+<Files pgraphs.cgi>
+require user admin
+</Files>
+
